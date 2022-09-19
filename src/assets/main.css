@@ -1,0 +1,9 @@
+#app {
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 0;
+
+  font-weight: normal;
+  background-color: rgb(15 23 42);
+}
