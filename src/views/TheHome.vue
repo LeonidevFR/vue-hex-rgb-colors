@@ -28,7 +28,7 @@
         <input type="submit" class="btn-primary w-40 mb-10" value="Convert !" />
       </form>
       <span class="text-2xl text-amber-400 mb-10"
-        >Converted Hex : {{ convertedColor }}</span
+        >Converted {{ toValue }} : {{ convertedColor }}</span
       >
       <span class="text-xl text-amber-400">{{ colorPickerColor }}</span>
       <input
@@ -45,22 +45,36 @@ import { ref, watch } from "vue";
 const userInput = ref("#");
 
 watch(userInput, () => {
-  if (userInput.value.length === 0) {
-    userInput.value = "#";
-  }
+  //If conversion is from Hex to RGB
+  if (fromValue.value === "hex") {
+    if (userInput.value.length === 0) {
+      userInput.value = "#";
+    }
 
-  if (!userInput.value.includes("#")) {
-    userInput.value = "#" + userInput.value;
-  }
+    if (!userInput.value.includes("#")) {
+      userInput.value = "#" + userInput.value;
+    }
 
-  if (userInput.value.includes("#")) {
-    if (userInput.value.split("")[0] !== "#") {
+    if (userInput.value.includes("#")) {
+      if (userInput.value.split("")[0] !== "#") {
+        let input = userInput.value.split("").filter((el) => {
+          return el !== "#";
+        });
+        input.unshift("#");
+        userInput.value = input.join("");
+      }
+    }
+    //If conversion is from RGB to Hex
+  } else if (fromValue.value === "rgb") {
+    if (!userInput.value.includes("rgb")) {
       let input = userInput.value.split("").filter((el) => {
-        return el !== "#";
+        return el !== "(" && el !== ")";
       });
-      input.unshift("#");
-      console.log("input", input);
-      userInput.value = input.join("");
+      if (userInput.value.length === 0) {
+        userInput.value = "rgb(0,0,0)";
+      } else {
+        userInput.value = "rgb(" + input.join("") + ")";
+      }
     }
   }
 });
@@ -70,6 +84,12 @@ const colorPickerColor = ref("#000");
 const fromValue = ref("hex");
 const toValue = ref("rgb");
 
+watch(fromValue, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    userInput.value = "";
+  }
+});
+
 function convertColors() {
   if (
     fromValue.value.toLowerCase() === "hex" &&
@@ -78,13 +98,17 @@ function convertColors() {
       userInput.value.split("#")[1].length === 6)
   ) {
     hexToRgb();
+  } else if (
+    fromValue.value.toLowerCase() === "rgb" &&
+    toValue.value.toLowerCase() === "hex"
+  ) {
+    rgbToHex();
   } else {
     convertedColor.value = "#000";
     colorPickerColor.value = "#000";
   }
 }
 
-//TODO: handle opacity
 function hexToRgb() {
   let formattedHex = userInput.value.replace("#", "").split("");
 
@@ -114,6 +138,26 @@ function hexToRgb() {
     convertedColor.value = `rgb(${newFormattedHex.join(", ")})`;
     colorPickerColor.value = userInput.value;
   }
+}
+
+function rgbToHex() {
+  let filteredRgb = userInput.value.split(",");
+  filteredRgb[0] = filteredRgb[0].replace("rgb(", "");
+  filteredRgb[2] = filteredRgb[2].replace(")", "");
+
+  for (let i = 0; i < 3; i++) {
+    let hex = parseInt(filteredRgb[i]).toString(16);
+    if (hex.length < 2) {
+      filteredRgb[i] = "0" + hex;
+    } else {
+      filteredRgb[i] = hex;
+    }
+  }
+
+  let hex = `#${filteredRgb[0]}${filteredRgb[1]}${filteredRgb[2]}`;
+
+  convertedColor.value = hex;
+  colorPickerColor.value = hex;
 }
 </script>
 <style lang=""></style>
