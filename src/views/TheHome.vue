@@ -1,7 +1,7 @@
 <template>
   <div class="w-full min-h-[150px]">
     <div
-      class="w-full h-[600px] flex flex-col justify-start items-center pt-20"
+      class="w-full min-h-[600px] flex flex-col justify-start items-center pt-20"
     >
       <div class="text-2xl text-amber-400 mb-16">
         I want to convert
@@ -9,11 +9,8 @@
           <option value="hex" selected>Hex</option>
           <option value="rgb">Rgb</option>
         </select>
-        to :
-        <select v-model="toValue" class="bg-transparent">
-          <option value="rgb" selected>Rgb</option>
-          <option value="hex">Hex</option>
-        </select>
+        to
+        <span>{{ toValue }}</span>
       </div>
       <form
         class="flex flex-col justify-start items-center"
@@ -32,10 +29,21 @@
       >
       <span class="text-xl text-amber-400">{{ colorPickerColor }}</span>
       <input
-        type="color"
-        v-model="colorPickerColor"
-        class="w-[150px] h-[150px]"
+        v-model="colorPickerOpacity"
+        class="w-[250px] mb-4"
+        type="range"
+        min="0"
+        max="1"
+        step="0.1"
       />
+      <div class="border-2 border-amber-400 rounded-lg mb-10 bg-white">
+        <input
+          type="color"
+          v-model="colorPickerColor"
+          class="w-[250px] h-[250px]"
+          :style="{ opacity: colorPickerOpacity }"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -81,12 +89,19 @@ watch(userInput, () => {
 
 const convertedColor = ref("#000");
 const colorPickerColor = ref("#000");
+const colorPickerOpacity = ref("1");
 const fromValue = ref("hex");
 const toValue = ref("rgb");
 
 watch(fromValue, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     userInput.value = "";
+  }
+  if (newVal === "rgb") {
+    toValue.value = "hex";
+  }
+  if (newVal === "hex") {
+    toValue.value = "rgb";
   }
 });
 
